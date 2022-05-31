@@ -98,6 +98,7 @@ public class CTabFolderRenderer {
 	static final int ITEM_LEFT_MARGIN = 4;
 	static final int ITEM_RIGHT_MARGIN = 4;
 	static final int INTERNAL_SPACING = 4;
+	static final int HIGHLIGHT_BAR_THICKNESS = 2;
 	static final int FLAGS = SWT.DRAW_TRANSPARENT | SWT.DRAW_MNEMONIC | SWT.DRAW_DELIMITER;
 	static final String ELLIPSIS = "..."; //$NON-NLS-1$
 	private static final String CHEVRON_ELLIPSIS = "99+"; //$NON-NLS-1$
@@ -288,7 +289,7 @@ public class CTabFolderRenderer {
 				} else {
 					CTabItem[] items = parent.items;
 					if (items.length == 0) {
-						height = gc.textExtent("Default", FLAGS).y + ITEM_TOP_MARGIN + ITEM_BOTTOM_MARGIN; //$NON-NLS-1$
+						height = gc.textExtent("Default", FLAGS).y + ITEM_TOP_MARGIN + ITEM_BOTTOM_MARGIN + HIGHLIGHT_BAR_THICKNESS; //$NON-NLS-1$
 					} else {
 						for (int i=0; i < items.length; i++) {
 							height = Math.max(height, computeSize(i, SWT.NONE, gc, wHint, hHint).y);
@@ -450,7 +451,7 @@ public class CTabFolderRenderer {
 						width += curveWidth - curveIndent;
 					}
 					y = y - ITEM_TOP_MARGIN;
-					height = height + ITEM_TOP_MARGIN + ITEM_BOTTOM_MARGIN;
+					height = height + ITEM_TOP_MARGIN + ITEM_BOTTOM_MARGIN + HIGHLIGHT_BAR_THICKNESS;
 				}
 				break;
 		}
@@ -1329,6 +1330,16 @@ public class CTabFolderRenderer {
 					shape[index++] = y + height + 1;
 				}
 
+				// draw highlight of selected tab
+				Color previousColor = gc.getBackground();
+				gc.setBackground(item.getDisplay().getSystemColor(parent.shouldHighlight() ? SWT.COLOR_LIST_SELECTION : SWT.COLOR_WIDGET_DISABLED_FOREGROUND));
+				if(parent.onBottom) {
+					gc.fillOval(x + 1 /* outline */ + width / 4, y + height - 1 - HIGHLIGHT_BAR_THICKNESS, width /2, HIGHLIGHT_BAR_THICKNESS);
+				} else {
+					gc.fillOval(x + 1 /* outline */ + width / 4, y + 1, width /2, HIGHLIGHT_BAR_THICKNESS);
+				}
+				gc.setBackground(previousColor);
+
 				Rectangle clipping = gc.getClipping();
 				Rectangle clipBounds = item.getBounds();
 				clipBounds.height += 1;
@@ -1346,9 +1357,9 @@ public class CTabFolderRenderer {
 						int[] percents = parent.selectionGradientPercents;
 						boolean vertical = parent.selectionGradientVertical;
 						xx = x;
-						yy = parent.onBottom ? y -1 : y + 1;
+						yy = parent.onBottom ? y -1 : y + 2 + HIGHLIGHT_BAR_THICKNESS;
 						ww = width;
-						hh = height;
+						hh = height - 1 - HIGHLIGHT_BAR_THICKNESS;
 						if (!parent.single && !parent.simple) ww += curveWidth - curveIndent;
 						drawBackground(gc, shape, xx, yy, ww, hh, defaultBackground, image, colors, percents, vertical);
 					}
